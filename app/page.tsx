@@ -7,7 +7,6 @@ const questions = [
   { type: 'text', question: 'Who are your favorite authors? (You can list multiple)', name: 'authors', maxLength: 100 },
   { type: 'text', question: 'What language do you prefer?', name: 'language', maxLength: 50 },
   { type: 'text', question: 'What type of story are you in the mood for (e.g., adventure, romance, mystery)?', name: 'storyType', maxLength: 100 },
-  { type: 'text', question: 'Do you prefer standalone books or series?', name: 'standaloneOrSeries', maxLength: 50 },
   { type: 'text', question: 'Are there any specific themes or topics you enjoy (e.g., dystopian, space exploration)?', name: 'themes', maxLength: 100 },
 ];
 
@@ -66,6 +65,9 @@ export default function Home() {
       const target = e.target as HTMLInputElement;
       handleAnswer(target.value.trim());
       target.value = ''; // Clear the input field
+    } else if (e.key === 'Enter' && e.currentTarget.value.trim() === ''){
+      alert('Please enter a valid answer');
+     
     }
   };
 
@@ -99,19 +101,19 @@ export default function Home() {
             <div className="flex justify-between">
               <button
                 onClick={resetForm}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700"
               >
                 Reset Form
               </button>
               <button
                 onClick={() => fetchRecommendations(answers)}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700"
               >
                 Regenerate
               </button>
             </div>
-            <div className="font-bold mb-2">Here are your book recommendations:</div>
-            <ul className="list-disc pl-5">
+            <div className="font-bold my-4 text-lg">Here are your book recommendations:</div>
+            <ul className="list-disc ">
               {recommendations.map((rec: string, index) => (
                 <li key={index} className="mb-2">{rec}</li>
               ))}
