@@ -63,10 +63,18 @@ export default function Home() {
     setIsCompleted(false);
     setRecommendations([]);
   };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && e.currentTarget.value.trim() !== ''){
+      const target = e.target as HTMLInputElement;
+      handleAnswer(target.value.trim() as any);
+      target.value = ''; // Clear the input field
+    }
+  }
 
   return (
-    <div className="flex text-black justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg">
+    <div className="flex flex-col text-black justify-center items-center min-h-screen bg-gray-100">
+      <h1 className="text-3xl font-bold mb-6">Book Suggestion App</h1>
+      <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg ">
         {questions.slice(0, currentQuestionIndex + 1).map((q, index) => (
           <div key={index} className="mb-6">
             <div className="font-bold mb-2">{q.question}</div>
@@ -77,18 +85,12 @@ export default function Home() {
                   maxLength={q.maxLength}
                   placeholder="Type your answer..."
                   className="w-full p-2 border border-gray-300 rounded-lg"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const target = e.target as HTMLInputElement;
-                      handleAnswer(target.value as any);
-                      target.value = ''; // Clear the input field
-                    }
-                  }}
+                  onKeyDown={handleKeyDown}
                 />
               )}
             </div>
             {answers[q.name] && (
-              <div className="mt-2 ">
+              <div className="mt-2 italic ">
               {answers[q.name]}
               </div>
             )}
