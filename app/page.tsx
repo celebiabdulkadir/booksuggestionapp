@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import Loading from './loading';
 
 const questions = [
   { type: 'text', question: 'What is your preferred genre?', name: 'genre', maxLength: 50 },
@@ -26,6 +27,8 @@ export default function Home() {
   const [answers, setAnswers] = useState<Answer>({});
   const [isCompleted, setIsCompleted] = useState(false);
   const [recommendations, setRecommendations] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const answerRef = useRef<HTMLDivElement | null>(null);
 
   const handleAnswer = (answer: string) => {
     const newAnswers = { ...answers, [questions[currentQuestionIndex].name]: answer };
@@ -40,6 +43,7 @@ export default function Home() {
   };
 
   const fetchRecommendations = async (answers: Answer) => {
+    setLoading(true); // Set loading to true before fetching
     try {
       const response = await fetch('/api/recommend', {
         method: 'POST',
@@ -51,6 +55,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error:', error);
     }
+    setLoading(false); // Set loading to false after fetching
   };
 
   const resetForm = () => {
@@ -61,63 +66,75 @@ export default function Home() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && e.currentTarget.value.trim() !== '') {
+    if (e.key === 'Enter') {
       const target = e.target as HTMLInputElement;
       handleAnswer(target.value.trim());
       target.value = ''; // Clear the input field
-    } else if (e.key === 'Enter' && e.currentTarget.value.trim() === ''){
-      alert('Please enter a valid answer');
-     
     }
   };
 
+  useEffect(() => {
+    if (answerRef.current) {
+      answerRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [answers]);
+
   return (
     <div className="flex flex-col text-black justify-center items-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-6">Book Suggestion App</h1>
-      <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg">
-        {questions.slice(0, currentQuestionIndex + 1).map((q: Question, index) => (
-          <div key={index} className="mb-6">
-            <div className="font-bold mb-2">{q.question}</div>
-            <div>
-              {q.type === 'text' && !isCompleted && index === currentQuestionIndex && (
-                <input
-                  type="text"
-                  maxLength={q.maxLength}
-                  placeholder="Type your answer..."
-                  className="w-full p-2 border border-gray-300 rounded-lg"
-                  onKeyDown={handleKeyDown}
-                />
+      
+      <div className="w-full max-w-3xl flex flex-col justify-end bg-white p-8 rounded-lg shadow-lg ">
+      <h1 className="text-2xl font-bold mb-6 text-center shadow-md py-2">Book Suggestion App</h1>
+        <div className='shadow-md p-2 text-sm  rounded h-[30dvh] overflow-auto'>
+          {questions.slice(0, currentQuestionIndex + 1).map((q: Question, index) => (
+            <div key={index} className="mb-6">
+              <div className="font-bold mb-2">{q.question}</div>
+              <div>
+                {q.type === 'text' && !isCompleted && index === currentQuestionIndex && (
+                  <input
+                    type="text"
+                    maxLength={q.maxLength}
+                    placeholder="Type your answer..."
+                    className="w-full p-2 border border-gray-300 rounded-lg"
+                    onKeyDown={handleKeyDown}
+                  />
+                )}
+              </div>
+              {answers[q.name] && (
+                <div ref={answerRef} className="mt-2 italic">
+                  {answers[q.name]}
+                </div>
               )}
             </div>
-            {answers[q.name] && (
-              <div className="mt-2 italic">
-                {answers[q.name]}
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
         {isCompleted && (
-          <div className="mt-6">
-            <div className="flex justify-between">
+          <div className="mt-6 text-sm">
+            <div className="flex justify-between shadow-md p-2 rounded">
               <button
                 onClick={resetForm}
-                className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700"
+                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700"
               >
                 Reset Form
               </button>
               <button
                 onClick={() => fetchRecommendations(answers)}
-                className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700"
+                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-700"
               >
                 Regenerate
               </button>
             </div>
-            <div className="font-bold my-4 text-lg">Here are your book recommendations:</div>
-            <ul className="list-disc ">
-              {recommendations.map((rec: string, index) => (
-                <li key={index} className="mb-2">{rec}</li>
-              ))}
-            </ul>
+            {loading ? (
+              <Loading />
+            ) : (
+              <>
+                <div className="font-bold my-4 text-lg shadow-md p-2 rounded">Here are your book recommendations:</div>
+                <ul className="list-disc shadow-md p-2 rounded">
+                  {recommendations.map((rec: string, index) => (
+                    <li key={index} className="mb-2">{rec}</li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
       </div>
